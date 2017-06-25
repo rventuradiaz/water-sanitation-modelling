@@ -1,0 +1,123 @@
+---
+title: "Determination of oxygen mass transfer coefficient IKLa) in batch reactor"
+author: "Rafael Ventura"
+date: "23 de junio de 2017"
+output:
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Abstract
+
+## Objectives
+
+## Background
+Assignment is based on experiment for measuring D.O.
+````{r dataset, echo=FALSE}
+library(ggplot2)
+library(readxl)
+dataset <- read_excel("D:/Dropbox/R/projects/water-sanitation-modelling/Data.xls", 
+     sheet = "Data_all_and_calcul (2)", skip = 5)
+ggplot(dataset, aes(time_hhmmss,doc_mgl,fill=phase))+geom_line(aes(colour=phase, group=phase))
+```
+
+## Procedure
+
+Dissolved Oxygen concentration at equilibrium will be calculated using the Henry's Law. For that purpose:
+first, determine the barometrice pressure at 2600 [m], given P0, T, R, g, M using the barometric formula:
+
+(@) $P=P0*e^\frac{-Mgz}{RT}$
+where:
+
+$M=1,785*10^20$ [mol]; $P0=101325$ [Pa]; $T=298,15$ [K]; $R=3,314$ [J*K/mol]; $g=9,80$ [m/s^2]
+
+$P = 101325*exp(-\frac{28,96*10^-3*9,8*2600}{8,314*298,15}) = 75214$ [Pa]
+
+Second, determine dissolve oxygen concentration:
+
+$SO_eq = \frac {P}{K_{H}}$
+
+where $P= 75214$ [Pa]
+
+$K_{H} = 78,020*10^3$ [Pa*L/mol] ^[Sanders, R (2015), "Compilation of Henry's Law constants for water as a solvent". Atmos. Chem. Phys 15: 4399-4981]
+
+Partial pressure for oxygen is $P_{O2}=0,21*P = 15795$ [Pa]
+
+$SO_eq = \frac {15795*32*100}{78,020*10^3} = 6.4$ [mg/L]
+
+As substrate is depleted, Biomass undergoes endogenous respiration process in phase 1. As stated in problem definition, OUR is constant and it is calculated by mean of the following expression:
+
+$OUR = -\frac{DO_{end-of-phase1}-DO_{t0}}{t_{end-of-phase1}-t_{0}}$ [mg/L-h]
+
+```{r OUR1, echo=FALSE}
+library(readxl)
+library(lattice)
+dataset <- read_excel("D:/Dropbox/R/projects/water-sanitation-modelling/Data.xls", 
+     sheet = "Data_all_and_calcul (2)", skip = 5)
+p1_dataset <- subset(dataset,dataset$phase==1)
+OURdC <- (p1_dataset[nrow(p1_dataset),"doc_mgl"]-p1_dataset[1,"doc_mgl"])
+OURdt <- (as.numeric(p1_dataset[nrow(p1_dataset),"time_hhmmss"]-p1_dataset[1,"time_hhmmss"])/60)
+print(paste("OUR_OHO = ", as.character(round(-OURdC/OURdt,2))," [mg/L-h]", ""))
+
+```
+Alternatively, $OUR$ can be obtained from linear regression of dissolved oxygen vs time
+```{r OUR2, echo=FALSE}
+library(readxl)
+library(lattice)
+dataset <- read_excel("D:/Dropbox/R/projects/water-sanitation-modelling/Data.xls", 
+     sheet = "Data_all_and_calcul (2)", skip = 5)
+p1_dataset <- subset(dataset,dataset$phase==1)
+p1_dataset$time_hh <- as.numeric(p1_dataset$time_hhmmss- as.POSIXct("1899-12-31 14:51:40"))/60
+OUR_lm <- lm(doc_mgl ~ time_hh, data = p1_dataset)
+print(OUR_lm)
+xyplot(doc_mgl ~ time_hh, data = p1_dataset, panel = function(x, y, ...) {
+                 panel.xyplot(x, y, ...)
+                 panel.lmline(x, y, ...)
+               })
+print(paste("OUR_OHO = ", as.character(OUR_lm$coefficients[2])," [mg/L-h]", ""))
+```
+$K_{La}$ can obtained directly without need to use AQUASIM, by plotting $ln(\frac{SO_{eq}-SO}{SO_{eq}-SO_{0}})$ vs time plus linear regression to obtain the linear slope coefficient as $K_{La}$ with the assumption reactor is modelled as CSTR. 
+```{r Kal, echo=FALSE }
+library(readxl)
+library(lattice)
+dataset <- read_excel("D:/Dropbox/R/projects/water-sanitation-modelling/Data.xls", 
+     sheet = "Data_all_and_calcul (2)", skip = 5)
+p2_dataset <- subset(dataset,dataset$phase==2)
+p2_dataset$time_hh <- as.numeric(p2_dataset$time_hhmmss- as.POSIXct("1899-12-31 14:51:40"))/60-0.3877778
+print(p2_dataset$time_hh[nrow(p2_dataset)])
+p2_dataset$LN <- log((6.4-p2_dataset$doc_mgl)/(6.4-p2_dataset$doc_mgl[1]))
+p2_dataset_lm <- subset(p2_dataset, p2_dataset$time_hh < 0.15)
+Kla_lm <- lm(LN ~ time_hh, data = p2_dataset_lm)
+print(Kla_lm)
+xyplot(LN ~ time_hh, data = p2_dataset_lm, panel = function(x, y, ...) {
+                 panel.xyplot(x, y, ...)
+                 panel.lmline(x, y, ...)
+               })
+print(paste("KLa = ", as.character(round(Kla_lm$coefficients[2],3))," [1/h]", ""))
+
+
+```
+**Simulation with AQUASIM**
+
+State variable is dissolved oxygen concentration (SO) in [mg/L], read from a .CSV file.
+
+Process variable is time in [h].
+
+Process is defined as reaction in CSTR
+
+Reaction rate is defined as KLa*(SOsat - SO), where KLa and SOsat are set to be -6.479 [1/h] and 6.4 [mg/L], respectively as per estimated values calculated above. Reactor volumen is set to be 1,64 [L].
+
+Neither diffusive nor adventive link are considered.
+
+Time interval simulation is set to be 0.10 [h] from 0 to 0.3902778.
+
+Simulation is run obtaining the following output shown in figure 2 
+
+## Discussion
+
+## Conclussions
+
