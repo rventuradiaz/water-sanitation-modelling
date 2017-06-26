@@ -1,0 +1,34 @@
+************************************************************************
+
+AQUASIM Version 2.1g (win/mfc) - List File
+
+************************************************************************
+
+Date and time of listing:  06/26/2017  02:05:22
+
+Name of plot: SensitivityAnalysis
+
+
+Type:	Argument	SensAR	Argument	SensAR	Argument	SensAR	Argument	SensAR
+Variable:	t	SO	t	SO	t	SO	t	SO
+Parameter:		SO_ini		QO2		K_La		SO_sat
+CalcNum:		0		0		0		0
+Compart.:		CSTR		CSTR		CSTR		CSTR
+Zone:		Bulk Volume		Bulk Volume		Bulk Volume		Bulk Volume
+Time/Space:		0		0		0		0
+Unit:	h	mg/L	h	mg/L	h	mg/L	h	mg/L
+Legend:		SO_ini		QO2		KLa		SO_sat
+	0	0.19	0	0	0	0	0	0
+	0.05	0.1374	0.05	0	0.05	1.455	0.05	1.771
+	0.1	0.09937	0.1	0	0.1	2.105	0.1	3.052
+	0.15	0.07187	0.15	0	0.15	2.284	0.15	3.978
+	0.2	0.05198	0.2	0	0.2	2.202	0.2	4.648
+	0.25	0.0376	0.25	0	0.25	1.991	0.25	5.133
+	0.3	0.0272	0.3	0	0.3	1.728	0.3	5.484
+	0.35	0.01967	0.35	0	0.35	1.458	0.35	5.737
+	0.4	0.01423	0.4	0	0.4	1.205	0.4	5.921
+	0.45	0.01028	0.45	0	0.45	0.9808	0.45	6.053
+	0.5	0.007436	0.5	0	0.5	0.7882	0.5	6.149
+
+
+

@@ -1,0 +1,70 @@
+************************************************************************
+
+AQUASIM Version 2.1g (win/mfc) - Parameter Estimation File
+
+************************************************************************
+
+Date and time of listing:  06/26/2017  02:23:26
+
+
+Number of parameters  = 1
+Number of data points = 282
+Estimation method     = secant
+
+
+Parameters:
+
+ Name            Unit            Start           Minimum         Maximum
+ SO_sat          mg/L            6.4             0               10
+
+
+Calculations:
+
+ SO_sat          Chi^2
+ [mg/L]
+
+ 6.4             293.23329
+ 6.5             326.93691
+ 6.2             233.75309
+ 5.8             146.4989
+ 5.1744007       94.79449
+ 5.2369607       95.311638
+ 5.1806567       94.799672
+ 5.1750263       94.794543
+ 5.1744007       94.79449
+
+
+Parameter estimation successfully finished (convergence criterion met)
+
+
+ SO_sat
+ [mg/L]
+
+
+Estimated values of the parameters:
+
+ 5.1744007
+
+
+Estimated standard errors of the parameters:
+
+ 0.050533065
+
+
+Estimated correlation matrix of the parameters:
+
+ 1
+
+
+Contribution of data series to Chi^2:
+
+ Calculation:        Data Series:        Chi^2 ini:      Chi^2 end:
+ param               SO_real             293.23329       94.79449
+                                         ------------    ------------
+                                         293.23329       94.79449
+
+
+Number of steps performed       = 6
+Number of simulations performed = 9
+
+
