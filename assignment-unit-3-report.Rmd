@@ -1,7 +1,7 @@
 ---
-title: "Determination of oxygen mass transfer coefficient IKLa) in batch reactor"
+title: "Determination of oxygen mass transfer coefficient (KLa) in batch reactor airation"
 author: "Rafael Ventura"
-date: "23 de junio de 2017"
+date: "23rd June of 2017"
 output:
   pdf_document: default
   word_document: default
@@ -12,11 +12,11 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## Objectives
-Exercise on the statement of a model, programming in AQUASIM, and devising a strategy for parameter fitting.
-## Background
-Assignment is based on experiment for measuring D.O.
+Exercise on the statement of a model, programming in AQUASIM, and devising a strategy for parameter fitting. 
 
-````{r dataset, fig.width = 6, fig.height = 3,  fig.fullwidth = TRUE, fig.cap = "Endogenous respiration- phase I", warning=FALSE, cache=TRUE, echo=FALSE}
+Assignment is part of evaluation of Modelling Sanitation Systems Online course. 
+
+````{r dataset, fig.width = 4, fig.height = 2,  fig.fullwidth = TRUE, fig.cap = "Endogenous respiration- phase I", warning=FALSE, cache=TRUE, echo=FALSE}
 library(ggplot2)
 library(readxl)
 wd <- getwd()
@@ -54,7 +54,7 @@ As substrate is depleted, Biomass undergoes endogenous respiration process in ph
 
 Alternatively, $OUR$ can be obtained from linear regression of dissolved oxygen vs time
 
-```{r OUR2, fig.width = 6, fig.height = 3,  fig.fullwidth = TRUE, fig.cap = "QO2 estimation", warning=FALSE, cache=TRUE,echo=FALSE}
+```{r OUR2, fig.width = 4, fig.height = 2,  fig.fullwidth = TRUE, fig.cap = "QO2 estimation- Phase 1 data", warning=FALSE, cache=TRUE,echo=FALSE}
 library(readxl)
 library(lattice)
 wd <- getwd()
@@ -71,8 +71,9 @@ xyplot(doc_mgl ~ time_hh, data = p1_dataset, panel = function(x, y, ...) {
                })
 print(paste("OUR_OHO = ", as.character(OUR_lm$coefficients[2])," [mg/L-h]", ""))
 ```
-$K_{La}$ can obtained directly without need to use AQUASIM, by plotting $ln(\frac{SO_{eq}-SO}{SO_{eq}-SO_{0}})$ vs time plus linear regression to obtain the linear slope coefficient as $K_{La}$ with the assumption reactor is modelled as CSTR. 
-```{r Kal, fig.width = 6, fig.height = 3,  fig.fullwidth = TRUE, fig.cap = "KLa regression", warning=FALSE, cache=TRUE, echo=FALSE }
+$K_{La}$ can obtained directly without need to use AQUASIM, by plotting linear solution of ODE $ln(\frac{SO_{eq}-SO}{SO_{eq}-SO_{0}})$ vs time plus linear regression to obtain the linear slope coefficient as $K_{La}$ with the assumption reactor is modelled as CSTR, as per Tourlousse and Ahmad^[http://www.egr.msu.edu/~hashsham/courses/ene806/docs/Oxygen%20Uptake%20Rate].
+
+```{r Kal, fig.width = 4, fig.height = 2,  fig.fullwidth = TRUE, fig.cap = "KLa as slope of linearized ODE solution vs time ", warning=FALSE, cache=TRUE, echo=FALSE }
 library(lattice)
 library(readxl)
 wd <- getwd()
@@ -91,43 +92,51 @@ xyplot(LN ~ time_hh, data = p2_dataset_lm, panel = function(x, y, ...) {
                  panel.lmline(x, y, ...)
                })
 print(paste("KLa = ", as.character(round(Kla_lm$coefficients[2],3))," [1/h]", ""))
-
-
 ```
 **Simulation with AQUASIM**
 
-State variable are dissolved oxygen concentration in liquid phase(SO) and oxygen concentration in gas phase, both in [mg/L]. 
-For parameter estimation measured SO data is read from a .CSV file.
+State variable are dissolved oxygen concentration in liquid phase(SO) and oxygen concentration in gas phase, both in [mg/L]. Process variable is time in [h].
 
-Process variable is time in [h].
+Process are defined as two reactions: 
 
-Process are defined as two reactions: $K_{La}*(SO_sat - SO)$ for oxygen mass transfer from gas to liquid phase, and $b_XH*X_H$ for endogenous respiration (decay).
+$K_{La}*(SO_sat - SO)$ for oxygen mass transfer during airation, 
 
-Initially, process consisted only of airation by mean of oxygen transfer reaction rate as defined per $K_{La}*(SO_{sat} - SO)$, where KLa and SO_sat are set to be 6.479 [1/h] and 6.4 [mg/L], respectively as per estimated values calculated above. Reactor volumen is set to be 1,64 [L].Afterwards, endogenous respiration was considered to better fit SO model output to SO measured.
+and $b_XH*X_H$ for endogenous respiration (decay). 
+
+Biomass Heterotrophic growth is not considered as substrate is depleted. For airation, KLa and SO_sat are set to be 6.479 [1/h] and 6.4 [mg/L], from calculations mentioned above. Reactor volumen is set to be 1,64 [L]. Petersen matrix is shown below:
+
+
+```{r petersen, echo=FALSE, warning= FALSE}
+            # c("Component","XH", "XI", "SO", "SG")
+library("knitr")
+petersen <- data.frame(process=rep(NA,2), XH=rep(NA,2) , XI=rep(NA,2), SO=rep(NA,2), SG=rep(NA,2))
+airation <- c("Airation", 0, 0, 1,-1)
+decay <-    c("Decay",-1,1,-1,0 )
+petersen[1,] <- airation
+petersen[2,] <- decay
+knitr::kable(
+  petersen, caption = 'Table 1. Petersen matrix.')
+```
 
 For endogenous respiration (decay) process's reaction rate, b_XH was se to 0.233 [1/h]. As QO2 is constant, initial Biomass concentration XH_0 was estimated by dividing OUR by b_XH: XH_0 = 85 [mg/L].
 
-A compartment is defined as a CSRT with airation and decay process activated. An inflow of air to compartment with no water flow is set with SG = 203 [mg/L]. SG is calculated using the Ideal gas law: $SG = PO/RT$ with appropriate units. 
+A compartment is defined as a CSRT with airation and decay process activated. An inflow of air to compartment with no water flow but gas with O2 concentration (SG) equal to 203 [mg/L]. SG is calculated using the Ideal gas law: $SG = PO/RT$ at with appropriate units. 
 
 Neither diffusive nor adventive link are considered.
 
-Simulation time interval simulation was set to be 0.05 [h] ranging from 0 to 0.3902778 [h].
+Simulation time interval simulation was set to be 0.001 [h] ranging and 400 steps.
 
-Simulation run obtained the following output shown in figure 2
-
-![Simulation run #1](oxygen-mass-transfer-simulation-run-1.jpg)
-
-**Sensitivity Analysis**
+##Sensitivity Analysis##
 Sensitivity analysis was done for SO_sat, QO2, SO_ini, and KLa. SO showed to increase as SO_sat increases and decreased as KLa increased. A changein QO2 and SO_ini don't change SO as the other parameters did.
 
-![Simulation run #1](plot-sensitivity-analysis.jpg)
+![AQUASIM SO Sensitivity analysis with parameters ](plot-sensitivity-analysis.jpg)
 
+##Model parameters adjustment##
 The strategy is fitting SO_sat and KLa
 
-![Simulation run #1](oxygen-mass-transfer-simulation-run-2.jpg)
+First, SO was fitted to data by changing SO_sat. SO_sat was set to 5,174 [mg/L] with standard error o,o5.
 
-The standard error of SO_sat fitting was o,o5.
+Second, SO predicted was fitted measured SO by changing KLa. parameter value was set to 7,768 [1/h] with standard error of 0,177.
 
-![Simulation run #1](oxygen-mass-transfer-simulation-run-3.jpg)
 
-The standard error for KLa parameter fitting was 0.177
+![AQUASIM Simulation run #3](oxygen-mass-transfer-simulation-run-3.jpg)
